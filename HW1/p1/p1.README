@@ -1,0 +1,31 @@
+/*
+Single Author info:
+mreddy2 Muppidi Harshavardhan Reddy
+*/
+
+P1:
+
+This Readme describes about the plots of Average Round Trip Times(in milliseconds) for various message Sizes.
+
+The plot consists of all the Message Sizes along the X-Axis and the Average Round Trip Time(in ms) along the Y-Axis.
+It is a clustered bar graph with sets of 4pairs for each of the message sizes. It also shows the error bars based on the standard deviations 
+we observed.
+
+After looking over the plot, We can observer that as the message size increases the RTT's for all the Pairs keeps increasing.
+Exception to this would be for the message size 32, since it is initially establishing communication we observe a little higher RTT while after the Message size 64 
+it keeps on increasing and since the communication is established we don't observe the initial communication overhead as observed in case of message size 32 Bytes.
+
+While considering a particular message size the Avg RTT slightly varies from Pair to Pair. 
+With respect to the allotted nodes, in this case we can observe that the Pair 3 always takes slightly less time when compared to the other pairs, 
+but again this trend is only till a particular size limit which is upto Message Size 131072 Bytes. 
+The RTT Trend Till this size is as follows:
+Pair 3< Pair 1< Pair 2< Pair 4 
+
+While the RTT Values after the above message size(131072) when compared is as follows:
+Pair1 < Pair 2< Pair 3 < Pair 4
+
+As per the network configuration based on the nodes allocated Pair 3 having lower RTT says that they are nearby which could potentially mean 
+they are on the same switch on the infrastructure. While the pairs having higher RTT would mean that they are on the same switch and nearby.
+
+
+
