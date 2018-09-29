@@ -1,0 +1,35 @@
+/*Single Author info:
+mreddy2 Muppidi Harshavardhan Reddy */
+
+In this Readme the results of Avg_RTT Values obtained by Custom Version of MPI Calls is compared with the Values obtained by the 
+Actual Version of the MPI Calls 
+
+32   2.104100 0.462188  1.872200 0.478310  1.954400 0.293393  1.818400 0.238950
+64   1.859400 0.034986  1.662100 0.102014  1.731400 0.087478  1.917500 0.049429
+128   1.856000 0.042228  1.699200 0.077193  1.769600 0.077959  1.782500 0.163263
+256   1.859300 0.087210  1.607700 0.129213  1.734400 0.052823  1.772700 0.131795
+512   1.858100 0.080929  1.637400 0.116550  1.721000 0.053666  1.797900 0.078189
+1024   1.860900 0.059732  1.639300 0.062148  1.792900 0.078217  1.786600 0.057743
+2048   1.953700 0.056223  1.701000 0.095713  1.830400 0.059725  1.917700 0.134294
+4096   2.003300 0.056064  1.794100 0.079470  1.916800 0.074969  1.951000 0.144954
+8192   2.027300 0.057153  1.813400 0.114611  2.006900 0.083074  2.041100 0.124586
+16384   2.545600 0.126822  2.432800 0.104632  2.487100 0.182872  2.464500 0.135551
+32768   2.874700 0.149003  2.724600 0.101112  3.003800 0.214543  2.807600 0.126119
+65536   4.061800 0.243031  3.700100 0.278318  3.674400 0.186030  3.847600 0.182515
+131072   6.129400 0.131172  5.470100 0.271496  5.650200 0.146189  5.770800 0.186664
+262144   9.334300 0.220991  8.496800 0.363168  8.896700 0.373042  9.005300 0.252204
+524288   14.493400 0.371777  13.860400 0.704489  13.682500 0.400591  14.220200 0.472866
+1048576   21.819900 0.655148  21.073200 0.493698  21.202600 0.530517  21.060600 0.637159
+2097152   39.139700 0.863176  38.341700 0.640703  39.131800 0.847862  39.086300 0.640616
+
+These were the Values Observerd in case of MPI Version using Sockets which clearly tells us that these values are nearly 10 times the
+values observed in case of Standard MPI Library, this is because each send or receive calls in Socket Mode needs to open sockets and 
+establish a connection which is taking time and one other thing we can also see that as the size increases the time taken to send the 
+messages increases which is self explanatory as well. 
+
+Compilation Instructions:
+make -f p1.Makefile
+./my_prun ./my_rtt
+
+Note: Since the code involves opening multiple sockets and establishing conections and as well as reading and wirting to files.
+Output takes about 20seconds to display. 

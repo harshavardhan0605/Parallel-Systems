@@ -1,0 +1,21 @@
+/*Single Author info:
+mreddy2 Muppidi Harshavardhan Reddy */
+
+In this Readme the implementation of Pi Approximation by Monte Carlo methods with CUDA is explained. 
+
+The program is taking in the number of points and decides on number of Blocks needed with bound of 512 Threads per block. 
+Then Initializes and allocates memory for all the device copies as well. 
+
+With the function defined for GPU
+Each Block counts the total number of points falling in the circle(with reference to Monte Carlo's Simulation) and reduces the sum and is
+available at Thread 0 which is stored as per blockid into the result array.
+
+Then this array with the sums at all blocks is copied back to CPU and summation of all these gives us the total number of points falling
+in the circle. 
+With this the Pi is approximated. 
+
+Compilation Instructions: 
+make -f p2.Makefile 
+./p2 {Total Points}
+
+
