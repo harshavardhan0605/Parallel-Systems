@@ -1,0 +1,94 @@
+/*
+Single Author info:
+mreddy2 Muppidi Harshavardhan Reddy
+*/
+
+--->How/why does your optimization for removing memory copies work?
+Copying the complete memory block everytime is a overhead while in the optimization we just shift the pointers which is much efficient and 
+since it doesn't involve any memory copying and just pointer shifts it is faster than memcpy. 
+
+running ./lake with (1024 x 1024) grid, until 2.000000, with 1 threads
+Simulation took 253.310435 seconds // WITH MEMCPY
+Simulation took 244.475093 seconds // WITH OPTIMIZED MEMCPY
+
+Here we can see that with this the simulation is optimized and finishes faster than the one with memcpy.
+
+
+--->Does which loop you parallelized matter? Why or why not?
+Yes the loop which we parallelize infact matters because for instance we are parallelizing the inner loop which means the outer loop would be
+waiting for all the threads to complete only then runs the next iteration while incase of parallelizing the outer loop it doen't have to 
+wait and each thread runs it's own copy of the inner loop which actually makes sense for a parallelizing scenario which is why we have the
+best performance incase of parallelizing outer loop only. 
+
+// Inner Loop //
+running ./lake with (1024 x 1024) grid, until 2.000000, with 16 threads
+Initialization took 0.030122 seconds
+Simulation took 53.143417 seconds
+Init+Simulation took 53.173539 seconds
+
+// Outer Loop //
+running ./lake with (1024 x 1024) grid, until 2.000000, with 16 threads
+Initialization took 0.029383 seconds
+Simulation took 16.973651 seconds
+Init+Simulation took 17.003034 seconds
+
+
+--->Does parallelizing both loops make a difference? Why or why not?
+Yes this does make a difference since in this case OpenMP would consider both the for loops as one big chunk and divide them between
+threads. but yet the fact that with the combination the waiting observed incase of inner loop parallelization is less but yet based on the 
+divided chunk it performs better to an extent but again has to wait for other threads to finish for complete synchronization. Therefore 
+outer loop was seen to have best performance where it doesn't wait.
+
+// Both Loops  //
+running ./lake with (1024 x 1024) grid, until 2.000000, with 16 threads
+Initialization took 0.031589 seconds
+Simulation took 26.304385 seconds
+Init+Simulation took 26.335974 seconds
+
+
+--->Why does parallelizing memory initializations matter?
+In case of init functions the for loops could be parallelized which adversely impacts the performance by taking less time for initialization
+which we could see as below:
+
+// Parallelizing init() function
+running ./lake with (1024 x 1024) grid, until 2.000000, with 16 threads
+Initialization took 0.011407 seconds
+Simulation took 14.678020 seconds
+Init+Simulation took 14.689427 seconds
+
+So we could see that the initialization took 0.011 seconds which is an improvement than the previously observed value which is 0.03 seconds.
+
+Simillarly incase of memcpy for initializations inside the run_sim function by editing the code to copy with a for loop and then 
+parallelizing it also improves the simulation performance because the copying is now done parallelly across threads which makes it faster. 
+Therefore we could see the Simulation is be faster by doing so as below:
+
+//Memcpy Initialization changing to parallel
+running ./lake with (1024 x 1024) grid, until 2.000000, with 16 threads
+Initialization took 0.037917 seconds
+Simulation took 14.196094 seconds
+Init+Simulation took 14.234011 seconds
+
+As we can see simulation time to be faster after parallelizing the memcpy. 
+
+--->Does the scheduling type matter? Why or why not?
+Scheduling type does matter because when we have only 16 threads in our case and trying to run more number of iterations choosing dynamic
+or static would matter since static schedles the threads with a task in a round robin fashion while dynamic uses fifo to assign. This
+potentially effects since the execution times for each thread might vary and evidently we observe that dynamic takes more time than static
+below. So as we have only 16 threads and more number of taks which would be n*n in a case. So deciding whether static or dynamic matters.
+
+// With all OpenMP directives using dynamic
+unning ./lake with (1024 x 1024) grid, until 2.000000, with 16 threads
+Initialization took 0.044150 seconds
+Simulation took 15.712919 seconds
+Init+Simulation took 15.757069 seconds
+
+--->This program is particularly easy to parallelize. Why?
+This program doesn't have interdependencies between the threads and the code being dividied into 2 separate for loops infact makes it easier
+to parallelize since we do not have to worry about threads being interdependent. And also as we update the un value it doesn't matter what 
+other threads calculate since the uc and uo are same for any thread throughout and is never modified at any point during parallelization. 
+With the 2 for loops it's easier to be divided and parallelize. Therefore it is infact easy to parallelize this program. 
+
+
+
+
+

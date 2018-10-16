@@ -1,0 +1,169 @@
+/*
+Single Author info:
+mreddy2 Muppidi Harshavardhan Reddy
+*/
+
+In the run_sim() we can see that the program could be optimized. Before that we will get the serial time executions for the program.
+
+We will discuss with the gird size 512 and 1024 as well
+Benchmark used:  ./lake 512 4 4.0 1  OR  ./lake 1024 4 4.0 1
+
+---> Serial
+//Serial with 512*512 //
+running ./lake with (512 x 512) grid, until 4.000000, with 1 threads
+Initialization took 0.013637 seconds
+Simulation took 61.000920 seconds
+Init+Simulation took 61.014557 seconds
+
+// Serial with 1024*1024 //
+running ./lake with (1024 x 1024) grid, until 4.000000, with 1 threads
+Initialization took 0.031377 seconds
+Simulation took 487.622212 seconds
+Init+Simulation took 487.653589 seconds
+
+For Naive ACC Implementation we can observe the following outputs which could be used to infer what could be done to optimize the code.
+--> Naive ACC Implementation
+Accelerator Kernel Timing data
+/home/mreddy2/hw3/p2/lake.c
+  run_sim  NVIDIA  devicenum=0
+    time(us): 12,142,178
+    236: compute region reached 4097 times
+        241: kernel launched 4097 times
+            grid: [16x128]  block: [32x4]
+             device time(us): total=655,722 max=167 min=149 avg=160
+            elapsed time(us): total=762,191 max=796 min=174 avg=186
+    236: data region reached 8194 times
+        236: data copyin transfers: 16388
+             device time(us): total=6,079,962 max=395 min=369 avg=371
+        266: data copyout transfers: 16388
+             device time(us): total=5,406,494 max=344 min=328 avg=329
+
+//Naive Acc 
+running ./lake with (512 x 512) grid, until 4.000000, with 1 threads
+Initialization took 0.008198 seconds
+Simulation took 30.045836 seconds
+Init+Simulation took 30.054034 seconds
+
+
+
+---> Optimization
+So from the kernel timing statistics above we can see that data region reached 8194 time and copyin and copyout to be 16388 which could be
+optimized with OpenACC by copying the data to device once initially which should bring down the number of times data is accessed since then
+the data will be available within the GPU device and then parallelizing the finite differencing loop. We can see the following stats:
+
+[WITH GRID SIZE 512]
+Accelerator Kernel Timing data
+/home/mreddy2/hw3/p2/lake.c
+  run_sim  NVIDIA  devicenum=0
+    time(us): 519,917
+    229: data region reached 2 times
+        229: data copyin transfers: 4
+             device time(us): total=1,518 max=396 min=372 avg=379
+        287: data copyout transfers: 1
+             device time(us): total=342 max=342 min=342 avg=342
+    237: compute region reached 4097 times
+        237: kernel launched 4097 times
+            grid: [512]  block: [128]
+             device time(us): total=518,057 max=145 min=122 avg=126
+            elapsed time(us): total=610,100 max=596 min=144 avg=148
+    237: data region reached 8194 times
+
+As we can see now the data region is accessed only twice for copying in and copying out. And also for the simulation variables we need
+uc,un,uo,pebbles. So we have 4 copyin's while once the computation is done we need only uc which is holding the final results. So just
+one copyout is enough. This way of copying might also help in optimization. 
+We observe the time statistics as follows:
+
+// 512 Data Copy Optimization
+running ./lake with (512 x 512) grid, until 4.000000, with 1 threads
+Initialization took 0.008403 seconds
+Simulation took 1.063135 seconds
+Init+Simulation took 1.071538 seconds
+
+Serial: 61.014557 seconds    Optimization: 1.071538 seconds    [ 57x Faster ]
+
+
+-->Now incase of Higher Grid Size we observe the following 
+[WITH GRID SIZE 1024]
+Accelerator Kernel Timing data
+/home/mreddy2/hw3/p2/lake.c
+  run_sim  NVIDIA  devicenum=0
+    time(us): 3,778,213
+    229: data region reached 2 times
+        229: data copyin transfers: 4
+             device time(us): total=5,854 max=1,476 min=1,459 avg=1,463
+        287: data copyout transfers: 1
+             device time(us): total=1,315 max=1,315 min=1,315 avg=1,315
+    237: compute region reached 8193 times
+        237: kernel launched 8193 times
+            grid: [1024]  block: [128]
+             device time(us): total=3,771,044 max=514 min=450 avg=460
+            elapsed time(us): total=3,956,200 max=1,141 min=472 avg=482
+    237: data region reached 16386 times
+
+// 1024 Data Copy Optimization
+running ./lake with (1024 x 1024) grid, until 4.000000, with 1 threads
+Initialization took 0.029871 seconds
+Simulation took 4.482073 seconds
+Init+Simulation took 4.511944 seconds
+
+Serial: 487.653589 seconds   Optimization: 4.511944 seconds    [ 108x Faster ]
+
+---> The effect of the problem size (smaller vs. larger grids, short vs. longer simulation times)
+There is definitely effect of the grid size since as the grid size increases the parallelization makes sense as we have more scope of
+parallelization which adversely speeds us the program in a better way in that case. 
+While as we increase the simulation times the following are the observed values:
+
+// Serial with different Simulation Times:
+running ./lake with (512 x 512) grid, until 2.000000, with 1 threads
+Initialization took 0.008738 seconds
+Simulation took 30.473854 seconds
+Init+Simulation took 30.482592 seconds
+
+running ./lake with (512 x 512) grid, until 4.000000, with 1 threads
+Initialization took 0.013637 seconds
+Simulation took 61.000920 seconds
+Init+Simulation took 61.014557 seconds
+
+running ./lake with (512 x 512) grid, until 6.000000, with 1 threads
+Initialization took 0.009689 seconds
+Simulation took 91.458613 seconds
+Init+Simulation took 91.468302 seconds
+
+running ./lake with (512 x 512) grid, until 8.000000, with 1 threads
+Initialization took 0.008183 seconds
+Simulation took 121.703946 seconds
+Init+Simulation took 121.712129 seconds
+
+// Optimized Code with different Simulation Times 
+
+running ./lake with (512 x 512) grid, until 2.000000, with 1 threads            // [ 41X FASTER]  //
+Initialization took 0.008928 seconds
+Simulation took 0.746215 seconds
+Init+Simulation took 0.755143 seconds
+
+running ./lake with (512 x 512) grid, until 4.000000, with 1 threads            // [ 57X FASTER]  //
+Initialization took 0.008403 seconds
+Simulation took 1.063135 seconds
+Init+Simulation took 1.071538 seconds
+
+running ./lake with (512 x 512) grid, until 6.000000, with 1 threads            // [ 65X FASTER ]  //
+Initialization took 0.008729 seconds
+Simulation took 1.402964 seconds
+Init+Simulation took 1.411693 seconds
+
+running ./lake with (512 x 512) grid, until 8.000000, with 1 threads            // [ 71X FASTER ]  //
+Initialization took 0.009418 seconds
+Simulation took 1.714309 seconds
+Init+Simulation took 1.723727 seconds
+
+We observe that as the time increases the speed up is gradually increasing, this is probably because as the time increases the 
+parallelization increases since the data copy is done once only even though the while loop runs more times with the increase in simulation
+times.
+
+--->Where your biggest optimization came from ? 
+In our case we can see a great deal of optimization in case of memory management as we can see above with handling the memory access
+and decresing them gave us a great performance improvement. 
+
+--->Possible improvements in the code, etc.
+I couldn't exactly think of possible improvements but something to do the time evaluation inside the GPU only with a shared memmory
+and computing might speed up the program a little. 

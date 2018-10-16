@@ -1,0 +1,31 @@
+/*
+Single Author info:
+mreddy2 Muppidi Harshavardhan Reddy
+*/
+This Readme includes a discussion about the communication patterns in the lulesh2 Program. 
+
+The communnication from the plot could be said that most of the communication is happening at the diagonal with the number of calls to be
+21,41,61. With the center having higher calls while the either ends have comparitively less calls which makes sense since the pressure
+impact would be higher at the center and less around it. Therfore taking a rank we could say that they would converge at the center 
+which is why we see more calls around the diagonal. 
+For Instance 20 communicates with 30,40 similarly 60 communicates with 50,40.(Note this is just an example)
+
+Based on the Programming model(inferred from the documentation) which has 2 phases which are advancing the node quantities and advancing element quantities with a time 
+stepping algorithm. So during the 1st phase volume force combined with the stress value for each element is calculated and then they are 
+summed to it's eight surrounding nodes. So sends are expected to be to it's surrounding values which is infact observed from the matrix
+and the plot that as the rank increases the shift in the diagonal is because the ranks nearby will see more number of send calls. 
+
+While again based on new node values the phases go through again the next nodes again pass on the values which is also seen in the
+matrix.data that the send counts for a rank are present adjacently at a section. While since it's a hexhedral Mesh with 2 centerings,
+it would probably explain the 3 diagonal strips observed. 
+
+
+//General Idea of Implementation
+Counting whenever a send is called and maintaining an array at all the ranks and gathering them at Rank 0 during Finalize.
+Then writing them to a data file. 
+Executed in the following way:
+export OMP_NUM_THREADS=1
+make
+prun ./lulesh2.0 -s 80 -i 20
+
+
