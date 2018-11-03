@@ -1,0 +1,46 @@
+/*
+Single Author info:
+mreddy2 Muppidi Harshavardhan Reddy
+*/
+This Readme descibes the Map-Reduce Algorithm implemented in the program. 
+
+WCMapper :
+In this I have first got the file name from the file path and stored it in a String. 
+Then by splitting by space and acquired each word into a String Array
+Then traversed the String array and added each word and filename as the key and the value is set to 1. 
+
+WCReducer:
+In this by iterating the values which will be 1 for all the words, I have kept incrementing a sum variable and then incrementing 
+it for every occurence of the same word@document. So now I will have the total occurences of a word in a document which will be the wordcount.
+
+DSMapper:
+Now in DSMapper we will have the input from the output by WCReducer so first I am getting the whole file into a array by each line.
+Then by traversing each line and splitting based on the "@ and tab" we have the word wordCount and document as three separate parts and then 
+based on the required output format which is ( document , (word=wordCount) ), I am writing it back as the output of the Mapper.
+
+DSReducer:
+Under this I have used a TreeMap and for each value i.e word=wordCount after parsing it as word and wordcount, I am inserting it into the 
+TreeMap ( key-> word , value-> wordCount) by iterating on the Value part of the input which is (word=wordCount). 
+Then by summation of the values of the TreeMap(which will be wordcount) I will have the total number of words in a document which will be my docsize.
+Now for the Output: ( (word@document) , (wordCount/docSize) ) I have the docsize and the word, worCount in my treemap and the document under the key value of input.
+So I just wrote the desired formatted output back as the output from DSReducer. 
+
+TFIDFMapper:
+Under this similar to DSMapper, i have parsed input and by splitting it into different parts formatted it back to the desired output and 
+wrote it back as Output: ( word , (document=wordCount/docSize) )
+
+TFIDFReducer:
+Under this I need numDocsWithWord = number of documents containing word. Since the Reducer will receive all the documents it is in as the value part. 
+I have iterated in the Values part and while iterating incremented a local variable say k and the final k value would be the total number of documents this word is present in. 
+But at the same I have also added all the values i.e (document=wordCount/docSize) into a list,since I wouldn't be able to iterate again. 
+Now After this I will have the numDocsWithWord value, and traversing the list and getting all the needed values by parsing them with proper datatype typecasting. 
+I will have all the needed values for TFIDF Calculation which are:
+numDocs             --> Given inside the Reducer
+numDocsWithWord     --> Calculated as stated above
+wordCount           --> From the values part of the Input
+docSize             --> From the values part of the Input
+
+Then by calculating the TFID value and writing it into the Treemap as desired output format which is ( (document@word) , TFIDF ).
+
+
+

@@ -1,0 +1,56 @@
+/*
+Single Author info:
+hmajety  Hari Krishna Majety
+Group info:
+hmajety  Hari Krishna Majety
+srout Sweta Rout
+mreddy2 Muppidi Harshavardhan Reddy
+*/
+
+
+-->This Readme discusses about the elasped time for the 4 configurations:
+A: (1, 8, 8, 45) -- Combination of MPI and OpenMP           ELASPED TIME: 15.481950 seconds         % of Time Spent in MPI: 1.59
+B: Same as A but without core binding                       ELASPED TIME: 38.449908 seconds         % of Time Spent in MPI: 3.61
+C: (4, 0, 8, 60) -- MPI Only                                ELASPED TIME: 36.971249 seconds         % of Time Spent in MPI: 1.77
+D: Same as C but without core binding                       ELASPED TIME: 37.112736 seconds         % of Time Spent in MPI: 2.06
+
+As we can see the elasped time is more while using [MPI Only] which is supposed to happen since the OpenMP usually speeds up the computation
+so since we are not using it in case of MPI Only, we could see the time taken is more. This behaviour is expected as well. 
+Also we observe %time spent in MPI to be more in case of not binding it in the cores in B when compared to configuration A. 
+
+
+
+-->Most Expensive MPI Call:
+        Call                 Site       Time    App%    MPI%     COV
+AT A    Waitall                19        981    0.79   49.52    0.39
+AT B    Waitall                19   6.59e+03    2.14   59.25    0.13
+AT C    Waitall                 5   3.33e+03    1.12   63.48    0.26
+AT D    Waitall                 5   3.62e+03    1.21   58.94    0.35
+
+Here we observe the most Expensive MPI Call being Waitall since usually waitall has to wait for the Isend and Irecv's to complete this
+behaviour is logicall and is bound to happen and to note that the Time above is actually the summation of time spent on all the nodes which 
+explains why it is actually more than the elasped time. But the Percentage wouldn't matter since it's relative and would be more or less
+the same per node as well. 
+
+-->What differences are there between configurations? 
+The major difference being the use of OpenMP and not using it. One other thing to note is the use of bind to cores in all of these. 
+The binding of cores will prevent the migration of cores for the processes. So when we bind it then the we are actually letting the processes
+to work with the same caches for the whole duration. But when we don't bind and let it migrate it has again reset the caches the fetch the 
+required memery which is resulting in more time consumption. This is why we observer more time for configuration B than A. 
+
+But when we consider the case of MPI Only, it doesn't matter since here we do not have Open MP which uses the threads, therefore since there
+is no cache or the commom memory space accessed. We do not see difference with and without cores in case of configuration C and 
+configuration D.
+
+
+-->What are the limits to parallelization?
+So usually as the problem size increases the level or parallelization would increase and in our case as we can see most of the time is taken 
+for waiting (for waitall) for all the MPI non blocking calls to complete. It would be a limitation for our case. We should probably try to 
+have a algorithm in such a way that they do not have to wait on those and make it independent. Since as the size it increases the number 
+of calls waitall has to wait would increase. 
+In general we always have the limitation of how much we could paralelize given the size of core and capability and as well the memory 
+bandwidth and I/O bandwidth. 
+
+
+
+
